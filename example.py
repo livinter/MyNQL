@@ -1,3 +1,5 @@
+from MyNQL import MyNQL
+
 mynql = MyNQL("hangango")
 mynql.add_relation(("juan","person"),("email_promo1","promo"),distance= 1.)
 mynql.add_relation(("juan","person"),("netbuy","tienda"),distance=1.)

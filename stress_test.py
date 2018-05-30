@@ -1,5 +1,9 @@
 import random
 import numpy as np
+import time
+
+from MyNQL import MyNQL
+
 mynql = MyNQL("stress_test")
 
 start = time.time()
