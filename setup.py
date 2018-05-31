@@ -7,7 +7,7 @@ here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-long_description = f.read()
+   long_description = f.read()
 
 
 setup(name='MyNQL',
@@ -17,7 +17,7 @@ setup(name='MyNQL',
       author='Florian Scholz',
       author_email='livint@posteo.de',
       url='https://www.github.com/livinter/MyNQL/',
-      packages=['MyNQL', 'distutils.command'],
+      packages=['MyNQL',],
        classifiers=[
         'Development Status :: 4 - Beta',
 
@@ -38,6 +38,6 @@ setup(name='MyNQL',
         'Programming Language :: Python :: 3.6',
       ],
       keywords='recomendation query languange', 
-      install_requires=['networkx','yaml'],
+      install_requires=['networkx','pyyaml'],
      )
 

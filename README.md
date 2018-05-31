@@ -1,5 +1,9 @@
 # MyNQL
 
+## History
+
+This was a 15 jear old idea, now re-implemented with actual tools. At that time there was no Neo4j. But still missing something lightweight in concept and implementation.
+
 
 ## Concept
 
