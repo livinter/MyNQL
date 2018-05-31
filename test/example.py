@@ -1,5 +1,4 @@
-from MyNQL import MyNQL
-import utils
+from MyNQL import MyNQL, utils
 
 mynql = MyNQL("hangango", serializer=utils.fakedb_serializer)
 mynql.add_relation(("juan","person"),("email_promo1","promo"),distance= 1.)
@@ -8,8 +7,8 @@ mynql.add_relation(("miegel","person"),("email_promo1","promo"),distance=1.0)
 mynql.add_relation(("jose","person"),("email_promo1","promo"),distance=1.0)
 mynql.add_relation(("maria","person"),("netbuy","tienda"),distance=0.01)
 mynql.add_relation(("maria","person"),("email_promo1","promo"),distance=0.1)
-mynql.update_relation(("maria","person"),("email_promo1","promo"),distance=0.1)
-# mynql.delete_relation(("jose","person"),("email_promo1","promo"))
+mynql.set_relation(("maria","person"),("email_promo1","promo"),distance=0.1)
+# mynql.del_relation(("jose","person"),("email_promo1","promo"))
 print(mynql.get_best_relations(("juan","person"),  "person" ))
 mynql.plot()
 

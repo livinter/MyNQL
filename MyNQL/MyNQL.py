@@ -4,7 +4,7 @@ import sys
 
 import networkx as nx
 import yaml
-from utils import *
+import mynql.utils as utils
 
                          
 class MyNQL:
@@ -28,7 +28,7 @@ class MyNQL:
         self.logger.debug('Init '+ db_name)
         
         self.writer={"gmi":nx.write_gml, "gexf":nx.write_gexf, "gpickle": nx.write_gpickle, 
-                     "graphml":nx.write_graphml, "yaml":nx.write_yaml, "node_link_data":save_node_link_data}
+                     "graphml":nx.write_graphml, "yaml":nx.write_yaml, "node_link_data":utils.save_node_link_data}
         self.reader={"gmi":nx.read_gml, "gexf":nx.read_gexf, "gpickle": nx.read_gpickle, 
                      "graphml":nx.read_graphml, "yaml":nx.read_yaml}    
                          
@@ -128,22 +128,22 @@ class MyNQL:
                         if self.serializer:
                             self.serializer("DELETE",obj,"")            
                 
-    def _add_node(self, node, distance):
+    def _add_edge(self, node, distance):
         if "distance" in node:
             node["distance"] = 1./(1./(distance)+1./node["distance"])
         else:
             node["distance"] = distance
             
-    def _update_node(self, node, distance):
+    def _set_edge(self, node, distance):
         node["distance"] = distance
                 
     def add_relation(self, obj1, obj2, distance=1., distance2=None):
-        self._relation(obj1, obj2, distance, distance2, self._add_node)                
+        self._relation(obj1, obj2, distance, distance2, self._add_edge)                
         
-    def update_relation(self, obj1, obj2, distance=1., distance2=None):
-        self._relation(obj1, obj2, distance, distance2, self._update_node)
+    def set_relation(self, obj1, obj2, distance=1., distance2=None):
+        self._relation(obj1, obj2, distance, distance2, self._set_edge)
 
-    def delete_relation(self, obj1, obj2, distance=1., distance2=None):
+    def del_relation(self, obj1, obj2, distance=1., distance2=None):
         self._relation(obj1, obj2, distance, distance2, None)
         
     def get_relation(self, obj1, obj2):
@@ -173,8 +173,8 @@ class MyNQL:
         best_nodes_matching = list(filter(lambda e: e[1][1]==category and e[1]!=obj1, best_nodes))
         # sort
         if in_order:
-            best_nodes_matching = sorted(best_nodes_matching)[::-1]
+            best_nodes_matching = sorted(best_nodes_matching, reverse=True)
         self.logger.debug("get_best_relations %.2f seconds"%(time.time()-start))
         
-        return best_nodes_matching  
+        return best_nodes_matching
 
