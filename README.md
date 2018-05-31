@@ -9,6 +9,8 @@ For example you have categorys of customers, customer_attributes, merchants, mer
 
 All nodes need to be organized as tuples in the format (name, category)
 
+## Learn
+
 You can do relations between those nodes using:
 
   * add_relation - to create or to add a relation
@@ -19,10 +21,14 @@ The nodes will be created when they have connections, and remove if they have no
 
 Optional you can specify a distance between nodes.
 
+## Ask
+
  * get_best_relation - gives you the best related nodes from a specified category
  * get_relation - tells you have good two nodes are related
 
 To calculate how good two nodes are connected, all the different ways are taken into concideration up to a radius you can specify.
+
+## Backend
 
 You can put into place easily any database as a backed-storage replacing utils.fakedb_serializer. 
 This will keep a copy of all updates in your database. To load the network from the database after starting use MyNQL.load_serialized_node for each node.
