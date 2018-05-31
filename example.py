@@ -1,7 +1,7 @@
 from MyNQL import MyNQL
 import utils
 
-mynql = MyNQL("hangango")
+mynql = MyNQL("hangango", serializer=utils.fakedb_serializer)
 mynql.add_relation(("juan","person"),("email_promo1","promo"),distance= 1.)
 mynql.add_relation(("juan","person"),("netbuy","tienda"),distance=1.)
 mynql.add_relation(("miegel","person"),("email_promo1","promo"),distance=1.0)
