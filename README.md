@@ -5,6 +5,8 @@
 
 You tell about all the realtions you know, and ask about all the (indirect) relations you like to know.
 
+For example you have categorys of customers, customer_attributes, merchants, merchent_attributes, products, places, areas, promotions, interests. Now you just connect what belongs together.
+
 All nodes need to be organized as tuples in the format (name, category)
 
 You can do relations between those nodes using:
@@ -22,7 +24,10 @@ Optional you can specify a distance between nodes.
 
 To calculate how good two nodes are connected, all the different ways are taken into concideration up to a radius you can specify.
 
-You can put into place easily any database as a backed-storage replacing utils.fakedb_serializer. This will keep a copy of all updates in your database. To load the network from the database after starting use MyNQL.load_serialized_node for each node.
+You can put into place easily any database as a backed-storage replacing utils.fakedb_serializer. 
+This will keep a copy of all updates in your database. To load the network from the database after starting use MyNQL.load_serialized_node for each node.
+If you want to use MySQL, SQLite or Postgresql you can look at test/pee_example.py.
+
 
 
 
