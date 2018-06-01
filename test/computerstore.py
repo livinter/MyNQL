@@ -1,32 +1,33 @@
-from MyNQL import MyNQL, utils
+from MyNQL import MyNQL
 
 mynql = MyNQL("computerstore")
 
-mynql.add_relation(("juan","person"),("Nvidia Gtx 900","producto"), distance=2.)
-mynql.add_relation(("juan","person"),("Teclado","producto"), distance=2.)
-mynql.add_relation(("juan","person"),("Game Pad","producto"), distance=2.)
+mynql.add(("juan", "customer"), ("Nvidia Gtx 900", "product"), distance=2.)
+mynql.add(("juan", "customer"), ("Teclado", "product"), distance=2.)
+mynql.add(("juan", "customer"), ("Game Pad", "product"), distance=2.)
 
-mynql.add_relation(("maria","person"),("AMD Radeon","producto"), distance=2.)
-mynql.add_relation(("maria","person"),("USB 8GB","producto"), distance=2.)
-mynql.add_relation(("jose","person"),("USB 8GB","producto"), distance=2.)
+mynql.add(("maria", "customer"), ("AMD Radeon", "product"), distance=2.)
+mynql.add(("maria", "customer"), ("USB 8GB", "product"), distance=2.)
+mynql.add(("jose", "customer"), ("USB 8GB", "product"), distance=2.)
 
-mynql.add_relation(("AMD Radeon","producto"), ("video card", "product group"), distance=.5)
-mynql.add_relation(("Nvidia Gtx 900","producto"), ("video card", "product group"), distance=.5)
-mynql.add_relation(("USB 8GB","producto"), ("utills","product group"), distance=.5)
-mynql.add_relation(("Teclado","producto"), ("computer pices","product group"), distance=.5)
-mynql.add_relation(("Game Pad","producto"), ("gaming stuff","product group"), distance=.5)
+# predefined product relations have a strong relation (=short distance)
+mynql.add(("AMD Radeon", "product"), ("video card", "product group"), distance=.5)
+mynql.add(("Nvidia Gtx 900", "product"), ("video card", "product group"), distance=.5)
+mynql.add(("USB 8GB", "product"), ("utills", "product group"), distance=.5)
+mynql.add(("Teclado", "product"), ("computer pices", "product group"), distance=.5)
+mynql.add(("Game Pad", "product"), ("gaming stuff", "product group"), distance=.5)
 
-mynql.add_relation(("Nvidia Gtx 900","producto"), ("lan party","promo"))
-mynql.add_relation(("Game Pad","producto"), ("lan party","promo"))
-mynql.add_relation(("AMD Radeon","producto"), ("lan party","promo"))
+mynql.add(("Nvidia Gtx 900", "product"), ("lan party", "promo"))
+mynql.add(("Game Pad", "product"), ("lan party", "promo"))
+mynql.add(("AMD Radeon", "product"), ("lan party", "promo"))
 
-mynql.add_relation(("USB 8GB","producto"), ("office","promo"))
-mynql.add_relation(("Teclado","producto"), ("office","promo"))
+mynql.add(("USB 8GB", "product"), ("office", "promo"))
+mynql.add(("Teclado", "product"), ("office", "promo"))
 
 mynql.plot()
-print ("Persons for new office promo", mynql.get_best_relations(("office","promo"),"person", radius=4.),"\n\n")
-print ("Persons for video card", mynql.get_best_relations(("video card","product group"),"person", radius=4.),"\n\n")
-print ("Products for Juan", mynql.get_best_relations(("juan","person"),"producto", radius=4.),"\n\n")
-print ("Products related to AMD Radeon", mynql.get_best_relations(("AMD Radeon","producto"),"producto", radius=3.),"\n\n")
-print ("Product Group to video card", mynql.get_best_relations(("video card","product group"),"product group", radius=3.),"\n\n")
+print ("customer for new office promo", mynql.get(("office", "promo"), "customer", radius=4.), "\n\n")
+print ("customer for video card", mynql.get(("video card", "product group"), "customer", radius=4.), "\n\n")
+print ("Products for Juan", mynql.get(("juan", "customer"), "product", radius=4.), "\n\n")
+print ("Product to AMD Radeon:", mynql.get_best(("AMD Radeon", "product"), "product"), "\n\n")
+print ("Product Group to video card:", mynql.get_best(("video card", "product group"), "product group"), "\n\n")
 
