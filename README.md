@@ -1,21 +1,31 @@
 # MyNQL
 
-## History
-
-A lightweight concept and implementation for recommendation.
-
 
 ## Concept
 
-Teach the Network by telling all the known relations, and ask the network about all the (indirect) relations you like to know.
+A good foundation is a simple concept:
+ * Nodes have a type/category and a id/key
+ * Connections only have a distance
+ 
+You may have types/categories like: customers, customer_attributes, merchants, merchant_attributes, products, 
+places, areas, promotions, interests. This categories are often the name of the tables in your relational database.
+Each entry in your database used to have an id/key.
 
-For example you have categories of customers, customer_attributes, merchants, merchant_attributes, products, places, areas, promotions, interests. Now you just connect what belongs together.
+As every item in your database can be identified this way, all nodes need to be organized as tuples in the format `(id/key/name, type/category)`
 
-All nodes need to be organized as tuples in the format `(name, category)`
+Now teach the network by telling all the known relations, and ask the network about all the (indirect) relations you like to know.
+
+**This is very simple, but also very powerful!** You define a starting point, and search for the closest matches of a desired type/category.
+When you add more connections your questions will stay the same, only the results will improve.
+If you like to see a real live example look this example.
+https://github.com/livinter/MyNQL/blob/master/test/computerstore.py#L28
+
+
+
 
 ## Install
 ```
-https://github.com/livinter/MyNQL.git
+git clone https://github.com/livinter/MyNQL.git
 python setup.py install
 ```
 
@@ -26,7 +36,7 @@ You can do relations between those nodes using:
 
   * `add` - to create or to add a relation
   * `set` - to create or to set a relation
-  * `delete` - delete the relation
+  * `delete` - delete a relation
 
 The nodes will be created when they have connections, and remove if they have no more connections.
 
@@ -42,7 +52,7 @@ To calculate how good two nodes are connected, all the different ways are taken 
 
 ## Design
 
-Lets imagen you have
+Imagen you have
 
 Table *customer*
 
