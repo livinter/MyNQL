@@ -1,3 +1,8 @@
+"""
+
+
+"""
+
 import logging
 import time
 import sys
@@ -51,6 +56,9 @@ class MyNQL:
     def get_categories(self):
         """
         all the categories that have been used so far
+        >>> MyNQL("x").add(("juan", "person"), ("promo1", "promo")).get_categories()
+        ['person', 'promo']
+
         :return: list of categories
         """
         return self.known_categories
@@ -158,17 +166,19 @@ class MyNQL:
                 except:
                     self.logger.warning('edge already removed')
 
+        # check for serializing updates
         if self.serializer:
             for obj in node12:
                 self.serializer("UPDATE", obj, yaml.dump(self.G[obj]))
 
+        # check for removing not used nodes
         if not update_func:
-            for obj in node12:
-                if obj in self.G:
-                    if not nx.all_neighbors(self.G, obj):
-                        self.G.remove_node(obj)
+            for node in node12:
+                if node in self.G:
+                    if len(list(nx.all_neighbors(self.G, node))) == 0:
+                        self.G.remove_node(node)
                         if self.serializer:
-                            self.serializer("DELETE", obj, "")
+                            self.serializer("DELETE", node, "")
 
     def _add_edge(self, node, distance):
         if "distance" in node:
@@ -182,6 +192,15 @@ class MyNQL:
     def add(self, node1, node2, distance=1., distance_backward=None):
         """
         add a relation between two nodes, is the relation already exist its closeness will be reduces
+
+        >>> x = MyNQL("x").add((1,1),(3,3))
+        >>> x.G[(1,1)][(3,3)]
+        {'distance': 1.0}
+        >>> _ = x.add((1,1),(3,3))
+        >>> x.G[(1,1)][(3,3)]
+        {'distance': 0.5}
+
+
         :param node1: this is a node as a tuple composed like (name/id, category)
         :type node1: tuple
         :param node2: this is a node as a tuple composed like (name/id, category)
@@ -193,9 +212,17 @@ class MyNQL:
         :return:
         """
         self._relation(node1, node2, distance, distance_backward, self._add_edge)
+        return self
 
     def set(self, node1, node2, distance=1., distance_backward=None):
         """
+        >>> x = MyNQL("x").set((1,1),(3,3))
+        >>> x.G[(1,1)][(3,3)]
+        {'distance': 1.0}
+        >>> _ = x.set((1,1),(3,3))
+        >>> x.G[(1,1)][(3,3)]
+        {'distance': 1.0}
+
         set a relation between two nodes, is the relation already exist its closeness will be overwritten
         :param node1: this is a node as a tuple composed like (name/id, category)
         :type node1: tuple
@@ -208,9 +235,15 @@ class MyNQL:
         :return:
         """
         self._relation(node1, node2, distance, distance_backward, self._set_edge)
+        return self
 
     def delete(self, node1, node2, distance=1., distance_backward=None):
         """
+        >>> nql = MyNQL("x").add(("juan", "person"), ("promo1", "promo"))
+        >>> nql = nql.delete(("juan", "person"), ("promo1", "promo"))
+        >>> nx.number_of_nodes(nql.G)
+        0
+
         delete a connection
         :param node1:
         :param node2:
@@ -219,6 +252,7 @@ class MyNQL:
         :return:
         """
         self._relation(node1, node2, distance, distance_backward, None)
+        return self
 
     def get_distance(self, node1, node2, radius=3.):
         """
@@ -293,3 +327,8 @@ class MyNQL:
         :return:
         """
         return self._get(node1, category, radius, best_only=True)
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

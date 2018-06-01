@@ -7,7 +7,7 @@ A lightweight concept and implementation for recommendation.
 
 ## Concept
 
-You tell about all the relations you know, and ask about all the (indirect) relations you like to know.
+Teach the Network by telling all the known relations, and ask the network about all the (indirect) relations you like to know.
 
 For example you have categories of customers, customer_attributes, merchants, merchant_attributes, products, places, areas, promotions, interests. Now you just connect what belongs together.
 

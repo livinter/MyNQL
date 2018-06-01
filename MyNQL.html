@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module MyNQL</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>MyNQL</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/flo/MyNQL/MyNQL/MyNQL.py">/home/flo/MyNQL/MyNQL/MyNQL.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="networkx.html">networkx</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+<a href="time.html">time</a><br>
+</td><td width="25%" valign=top><a href="mynql.utils.html">mynql.utils</a><br>
+<a href="yaml.html">yaml</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="MyNQL.html#MyNQL">MyNQL</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="MyNQL">class <strong>MyNQL</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="MyNQL-__init__"><strong>__init__</strong></a>(self, db_name, log_file=None, serializer=None, log_level=40, backward_factor=0.5)</dt><dd><tt>create&nbsp;a&nbsp;<a href="#MyNQL">MyNQL</a>&nbsp;server<br>
+&nbsp;<br>
+:param&nbsp;db_name:&nbsp;name&nbsp;of&nbsp;the&nbsp;database<br>
+:type&nbsp;db_name:&nbsp;string<br>
+:param&nbsp;log_file:&nbsp;None&nbsp;is&nbsp;stdout,&nbsp;otherwise&nbsp;log&nbsp;filename<br>
+:type&nbsp;log_file:&nbsp;string<br>
+:param&nbsp;serializer:&nbsp;function&nbsp;to&nbsp;serialize&nbsp;all&nbsp;changes&nbsp;to&nbsp;database,&nbsp;see&nbsp;utils.fake_db_serializer&nbsp;as&nbsp;sample<br>
+:param&nbsp;log_level:&nbsp;detail&nbsp;of&nbsp;logging<br>
+:param&nbsp;backward_factor&nbsp;standard&nbsp;multiplicator&nbsp;from&nbsp;distance_backward&nbsp;in&nbsp;relation&nbsp;to&nbsp;distance<br>
+:type&nbsp;backward_factor&nbsp;float<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-add"><strong>add</strong></a>(self, node1, node2, distance=1.0, distance_backward=None)</dt><dd><tt>add&nbsp;a&nbsp;relation&nbsp;between&nbsp;two&nbsp;nodes,&nbsp;is&nbsp;the&nbsp;relation&nbsp;already&nbsp;exist&nbsp;its&nbsp;closeness&nbsp;will&nbsp;be&nbsp;reduces<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;x&nbsp;=&nbsp;<a href="#MyNQL">MyNQL</a>("x").<a href="#MyNQL-add">add</a>((1,1),(3,3))<br>
+&gt;&gt;&gt;&nbsp;x.G[(1,1)][(3,3)]<br>
+{'distance':&nbsp;1.0}<br>
+&gt;&gt;&gt;&nbsp;_&nbsp;=&nbsp;x.<a href="#MyNQL-add">add</a>((1,1),(3,3))<br>
+&gt;&gt;&gt;&nbsp;x.G[(1,1)][(3,3)]<br>
+{'distance':&nbsp;0.5}<br>
+&nbsp;<br>
+&nbsp;<br>
+:param&nbsp;node1:&nbsp;this&nbsp;is&nbsp;a&nbsp;node&nbsp;as&nbsp;a&nbsp;tuple&nbsp;composed&nbsp;like&nbsp;(name/id,&nbsp;category)<br>
+:type&nbsp;node1:&nbsp;tuple<br>
+:param&nbsp;node2:&nbsp;this&nbsp;is&nbsp;a&nbsp;node&nbsp;as&nbsp;a&nbsp;tuple&nbsp;composed&nbsp;like&nbsp;(name/id,&nbsp;category)<br>
+:type&nbsp;node2:&nbsp;tuple<br>
+:param&nbsp;distance:&nbsp;the&nbsp;closer&nbsp;the&nbsp;distance&nbsp;the&nbsp;more&nbsp;both&nbsp;nodes&nbsp;are&nbsp;related<br>
+:type&nbsp;distance:&nbsp;float<br>
+:param&nbsp;distance_backward:<br>
+:type&nbsp;distance_backward:&nbsp;float<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-delete"><strong>delete</strong></a>(self, node1, node2, distance=1.0, distance_backward=None)</dt><dd><tt>&gt;&gt;&gt;&nbsp;nql&nbsp;=&nbsp;<a href="#MyNQL">MyNQL</a>("x").<a href="#MyNQL-add">add</a>(("juan",&nbsp;"person"),&nbsp;("promo1",&nbsp;"promo"))<br>
+&gt;&gt;&gt;&nbsp;nql&nbsp;=&nbsp;nql.<a href="#MyNQL-delete">delete</a>(("juan",&nbsp;"person"),&nbsp;("promo1",&nbsp;"promo"))<br>
+&gt;&gt;&gt;&nbsp;nx.number_of_nodes(nql.G)<br>
+0<br>
+&nbsp;<br>
+delete&nbsp;a&nbsp;connection<br>
+:param&nbsp;node1:<br>
+:param&nbsp;node2:<br>
+:param&nbsp;distance:<br>
+:param&nbsp;distance_backward:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-get"><strong>get</strong></a>(self, node1, category, radius=3.0, in_order=True)</dt><dd><tt>return&nbsp;[(closeness,&nbsp;node),..]&nbsp;filtered&nbsp;by&nbsp;category&nbsp;ordered&nbsp;by&nbsp;closeness&nbsp;to&nbsp;node1<br>
+if&nbsp;no&nbsp;nodes&nbsp;are&nbsp;found&nbsp;and&nbsp;empty&nbsp;list<br>
+&nbsp;<br>
+:param&nbsp;node1:&nbsp;the&nbsp;starting&nbsp;node&nbsp;for&nbsp;calculating&nbsp;closeness<br>
+:type:&nbsp;tuple<br>
+:param&nbsp;category:&nbsp;the&nbsp;result&nbsp;is&nbsp;reduced&nbsp;to&nbsp;only&nbsp;elements&nbsp;from&nbsp;a&nbsp;specific&nbsp;category<br>
+:type:&nbsp;string<br>
+:param&nbsp;radius:&nbsp;reduce&nbsp;search&nbsp;radius&nbsp;to&nbsp;radius<br>
+:type:&nbsp;float<br>
+:param&nbsp;in_order:&nbsp;sort&nbsp;output&nbsp;by&nbsp;having&nbsp;the&nbsp;best&nbsp;relation&nbsp;first<br>
+:type:&nbsp;bool<br>
+:return:&nbsp;best&nbsp;matching&nbsp;nodes</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-get_best"><strong>get_best</strong></a>(self, node1, category, radius=3.0)</dt><dd><tt>return&nbsp;just&nbsp;the&nbsp;best&nbsp;matching&nbsp;node&nbsp;value,&nbsp;if&nbsp;no&nbsp;node&nbsp;has&nbsp;been&nbsp;found&nbsp;None&nbsp;is&nbsp;returned<br>
+:param&nbsp;node1:<br>
+:param&nbsp;category:<br>
+:param&nbsp;radius:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-get_categories"><strong>get_categories</strong></a>(self)</dt><dd><tt>all&nbsp;the&nbsp;categories&nbsp;that&nbsp;have&nbsp;been&nbsp;used&nbsp;so&nbsp;far<br>
+&gt;&gt;&gt;&nbsp;<a href="#MyNQL">MyNQL</a>("x").<a href="#MyNQL-add">add</a>(("juan",&nbsp;"person"),&nbsp;("promo1",&nbsp;"promo")).<a href="#MyNQL-get_categories">get_categories</a>()<br>
+['person',&nbsp;'promo']<br>
+&nbsp;<br>
+:return:&nbsp;list&nbsp;of&nbsp;categories</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-get_distance"><strong>get_distance</strong></a>(self, node1, node2, radius=3.0)</dt><dd><tt>get&nbsp;the&nbsp;relation&nbsp;between&nbsp;two&nbsp;nodes<br>
+:param&nbsp;node1:<br>
+:param&nbsp;node2:<br>
+:return:&nbsp;float&nbsp;of</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-load"><strong>load</strong></a>(self, typ='gexf', path='')</dt><dd><tt>load&nbsp;the&nbsp;complete&nbsp;network<br>
+&nbsp;<br>
+:param&nbsp;typ:&nbsp;one&nbsp;of&nbsp;gmi,&nbsp;gexf,&nbsp;gpickle,&nbsp;graphml,&nbsp;yaml,&nbsp;node_link_data<br>
+:param&nbsp;path:&nbsp;location&nbsp;of&nbsp;network&nbsp;file<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-load_serialized_node"><strong>load_serialized_node</strong></a>(self, key, yaml_node_data)</dt><dd><tt>used&nbsp;to&nbsp;load&nbsp;network&nbsp;from&nbsp;database<br>
+:param&nbsp;key:<br>
+:param&nbsp;yaml_node_data:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-plot"><strong>plot</strong></a>(self)</dt><dd><tt>draw&nbsp;graph&nbsp;using&nbsp;mathplotlib<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-save"><strong>save</strong></a>(self, typ='gexf', path='')</dt><dd><tt>save&nbsp;network&nbsp;to&nbsp;disk<br>
+:param&nbsp;typ:&nbsp;one&nbsp;of&nbsp;gmi,&nbsp;gexf,&nbsp;gpickle,&nbsp;graphml,&nbsp;yaml,&nbsp;node_link_data<br>
+:param&nbsp;path:&nbsp;location&nbsp;to&nbsp;save&nbsp;file<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="MyNQL-set"><strong>set</strong></a>(self, node1, node2, distance=1.0, distance_backward=None)</dt><dd><tt>&gt;&gt;&gt;&nbsp;x&nbsp;=&nbsp;<a href="#MyNQL">MyNQL</a>("x").<a href="#MyNQL-set">set</a>((1,1),(3,3))<br>
+&gt;&gt;&gt;&nbsp;x.G[(1,1)][(3,3)]<br>
+{'distance':&nbsp;1.0}<br>
+&gt;&gt;&gt;&nbsp;_&nbsp;=&nbsp;x.<a href="#MyNQL-set">set</a>((1,1),(3,3))<br>
+&gt;&gt;&gt;&nbsp;x.G[(1,1)][(3,3)]<br>
+{'distance':&nbsp;1.0}<br>
+&nbsp;<br>
+set&nbsp;a&nbsp;relation&nbsp;between&nbsp;two&nbsp;nodes,&nbsp;is&nbsp;the&nbsp;relation&nbsp;already&nbsp;exist&nbsp;its&nbsp;closeness&nbsp;will&nbsp;be&nbsp;overwritten<br>
+:param&nbsp;node1:&nbsp;this&nbsp;is&nbsp;a&nbsp;node&nbsp;as&nbsp;a&nbsp;tuple&nbsp;composed&nbsp;like&nbsp;(name/id,&nbsp;category)<br>
+:type&nbsp;node1:&nbsp;tuple<br>
+:param&nbsp;node2:&nbsp;this&nbsp;is&nbsp;a&nbsp;node&nbsp;as&nbsp;a&nbsp;tuple&nbsp;composed&nbsp;like&nbsp;(name/id,&nbsp;category)<br>
+:type&nbsp;node2:&nbsp;tuple<br>
+:param&nbsp;distance:&nbsp;the&nbsp;closer&nbsp;the&nbsp;distance&nbsp;the&nbsp;more&nbsp;both&nbsp;nodes&nbsp;are&nbsp;related<br>
+:type&nbsp;distance:&nbsp;float<br>
+:param&nbsp;distance_backward:<br>
+:type&nbsp;distance_backward:&nbsp;float<br>
+:return:</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>
