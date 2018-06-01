@@ -2,7 +2,7 @@
 
 ## History
 
-A lightweight concept and implementation for recomendation.
+A lightweight concept and implementation for recommendation.
 
 
 ## Concept
@@ -45,6 +45,7 @@ To calculate how good two nodes are connected, all the different ways are taken 
 Lets imagen you have
 
 Table *customer*
+
 | Id      | Name     | ..  |
 | ------- | -------- | --- |
 | 101     | Jose     | ... |
@@ -53,6 +54,7 @@ Table *customer*
 ....
 
 Table *product*
+
 | Id      | Name     | ..  |
 | ------- | -------- | --- |
 | 101     | jeans    | ... |
@@ -63,7 +65,7 @@ Table *product*
 
 And you want to discover new relations.
 
-First you teach your network
+First you teach your network:
 
 ```
 from MyNQL import MyNQL
@@ -72,6 +74,14 @@ mynql = MyNQL("computerstore")
 mynql.add(("Juan", "customer"), ("jeans", "product"))
 mynql.add(("Juan", "customer"), ("socks", "product"))
 mynql.add(("Maria", "customer"), ("socks", "product"))
+```
+
+Then you can ask questions from other points of view.
+You always specify a starting point, and the category where you want to know the best matches.
+```
+
+products_related_to_juan = mynql.get(("Juan", "customer"), ("product"))
+products_related_to_jeans = mynql.get(("jeans", "product"), ("product"))
 
 ```
 
