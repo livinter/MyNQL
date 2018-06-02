@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to MyNQL’s documentation! &#8212; MyNQL 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="MyNQL 0.1 documentation" href="#" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-mynql-s-documentation">
+<h1>Welcome to MyNQL&#8217;s documentation!<a class="headerlink" href="#welcome-to-mynql-s-documentation" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-MyNQL"></span><div class="section" id="mynql">
+<h2>MyNQL<a class="headerlink" href="#mynql" title="Permalink to this headline">¶</a></h2>
+<p>MyNQL is a Python package that work as a Network Database</p>
+<dl class="docutils">
+<dt>Source::</dt>
+<dd><a class="reference external" href="https://github.com/livinter/MyNLQ">https://github.com/livinter/MyNLQ</a></dd>
+<dt>Bug reports::</dt>
+<dd><a class="reference external" href="https://github.com/livinter/MyNLQ/issues">https://github.com/livinter/MyNLQ/issues</a></dd>
+</dl>
+</div>
+<div class="section" id="the-shape-module">
+<h2>The “shape” module<a class="headerlink" href="#the-shape-module" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="MyNQL.MyNQL">
+<em class="property">class </em><code class="descclassname">MyNQL.</code><code class="descname">MyNQL</code><span class="sig-paren">(</span><em>db_name</em>, <em>log_file=None</em>, <em>serializer=None</em>, <em>log_level=40</em>, <em>backward_factor=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="MyNQL.MyNQL.connect">
+<code class="descname">connect</code><span class="sig-paren">(</span><em>nodes1</em>, <em>nodes2</em>, <em>distance=1.0</em>, <em>distance_backward=None</em>, <em>rewrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>connect a relation between two nodes, is the relation already exist its closeness will be reduces.
+if nodes do not exist, they will be created.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">MyNQL</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;table1.1&quot;</span><span class="p">,</span><span class="s2">&quot;table2.3&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">G</span><span class="p">[(</span><span class="s2">&quot;table1&quot;</span><span class="p">,</span><span class="s2">&quot;1&quot;</span><span class="p">)][(</span><span class="s2">&quot;table2&quot;</span><span class="p">,</span><span class="s2">&quot;3&quot;</span><span class="p">)]</span>
+<span class="go">{&#39;distance&#39;: 1.0}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;table1.1&quot;</span><span class="p">,</span><span class="s2">&quot;table2.3&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">G</span><span class="p">[(</span><span class="s2">&quot;table1&quot;</span><span class="p">,</span><span class="s2">&quot;1&quot;</span><span class="p">)][(</span><span class="s2">&quot;table2&quot;</span><span class="p">,</span><span class="s2">&quot;3&quot;</span><span class="p">)]</span>
+<span class="go">{&#39;distance&#39;: 0.5}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;table1.1&quot;</span><span class="p">,</span><span class="s2">&quot;table2.3&quot;</span><span class="p">,</span> <span class="n">rewrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">G</span><span class="p">[(</span><span class="s2">&quot;table1&quot;</span><span class="p">,</span><span class="s2">&quot;1&quot;</span><span class="p">)][(</span><span class="s2">&quot;table2&quot;</span><span class="p">,</span><span class="s2">&quot;3&quot;</span><span class="p">)]</span>
+<span class="go">{&#39;distance&#39;: 1.0}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>nodes1</strong> (<em>tuple</em>) &#8211; this is a node as a tuple composed like (name/id, category)</li>
+<li><strong>nodes2</strong> (<em>tuple</em>) &#8211; this is a node as a tuple composed like (name/id, category)</li>
+<li><strong>distance</strong> (<em>float</em>) &#8211; the closer the distance the more both nodes are related</li>
+<li><strong>distance_backward</strong> (<em>float</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>nodes1</em>, <em>nodes2</em>, <em>distance=1.0</em>, <em>distance_backward=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.delete" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nql</span> <span class="o">=</span> <span class="n">MyNQL</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;person.juan&quot;</span><span class="p">,</span> <span class="s2">&quot;promo.promo1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nql</span> <span class="o">=</span> <span class="n">nql</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;person.juan&quot;</span><span class="p">,</span> <span class="s2">&quot;promo.promo1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nx</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">(</span><span class="n">nql</span><span class="o">.</span><span class="n">G</span><span class="p">)</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+<p>delete a connection. if nodes do not have any neighbour anymore, nodes are also deleted.
+:param node1:
+:param node2:
+:param distance:
+:param distance_backward:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.get_categories">
+<code class="descname">get_categories</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.get_categories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.get_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>all the categories that have been used so far
+&gt;&gt;&gt; MyNQL(&#8220;x&#8221;).connect(&#8220;person.juan&#8221;, &#8220;promo.promo1&#8221;).get_categories()
+[&#8216;person&#8217;, &#8216;promo&#8217;]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of categories</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.get_distance">
+<code class="descname">get_distance</code><span class="sig-paren">(</span><em>node1</em>, <em>node2</em>, <em>radius=3.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.get_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.get_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>select the relation between two nodes
+:param node1:
+:param node2:
+:return: float of</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>typ='gexf'</em>, <em>path=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>load the complete network</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>typ</strong> &#8211; one of gmi, gexf, gpickle, graphml, yaml, node_link_data</li>
+<li><strong>path</strong> &#8211; location of network file</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.load_serialized_node">
+<code class="descname">load_serialized_node</code><span class="sig-paren">(</span><em>key</em>, <em>yaml_node_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.load_serialized_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.load_serialized_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>used to load network from database
+:param key:
+:param yaml_node_data:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>draw graph using mathplotlib
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>typ='gexf'</em>, <em>path=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>save network to disk
+:param typ: one of gmi, gexf, gpickle, graphml, yaml, node_link_data
+:param path: location to save file
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyNQL.MyNQL.select">
+<code class="descname">select</code><span class="sig-paren">(</span><em>nodes_1</em>, <em>category</em>, <em>radius=3.0</em>, <em>in_order=True</em>, <em>limit=None</em>, <em>value_only=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MyNQL/MyNQL.html#MyNQL.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#MyNQL.MyNQL.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>return [(closeness, node),..] filtered by category ordered by closeness to node1
+if no nodes are found and empty list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>nodes_1</strong> &#8211; the starting node for calculating closeness</li>
+<li><strong>category</strong> &#8211; the result is reduced to only elements from a specific category</li>
+<li><strong>radius</strong> &#8211; reduce search radius to radius</li>
+<li><strong>in_order</strong> &#8211; sort output by having the best relation first</li>
+<li><strong>limit</strong> &#8211; </li>
+<li><strong>value_only</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">best matching nodes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to MyNQL&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#mynql">MyNQL</a></li>
+<li><a class="reference internal" href="#the-shape-module">The “shape” module</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Florian.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

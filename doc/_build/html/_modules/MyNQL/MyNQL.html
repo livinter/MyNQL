@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MyNQL.MyNQL &#8212; MyNQL 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="top" title="MyNQL 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for MyNQL.MyNQL</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">MyNQL.utils</span> <span class="k">import</span> <span class="n">fake_db_serializer</span><span class="p">,</span> <span class="n">save_node_link_data</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">TEST MYNQL</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MyNQL"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL">[docs]</a><span class="k">class</span> <span class="nc">MyNQL</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">serializer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">backward_factor</span><span class="o">=.</span><span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        create a MyNQL server</span>
+
+<span class="sd">        :param db_name: name of the database</span>
+<span class="sd">        :type db_name: string</span>
+<span class="sd">        :param log_file: None is stdout, otherwise log filename</span>
+<span class="sd">        :type log_file: string</span>
+<span class="sd">        :param serializer: function to serialize all changes to database, see utils.fake_db_serializer as sample</span>
+<span class="sd">        :param log_level: detail of logging</span>
+<span class="sd">        :param backward_factor standard multiplier from distance_backward in relation to distance</span>
+<span class="sd">        :type backward_factor float</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_name</span> <span class="o">=</span> <span class="n">db_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">known_categories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span> <span class="o">=</span> <span class="n">serializer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backward_factor</span> <span class="o">=</span> <span class="n">backward_factor</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;MyNQL&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">log_file</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(levelname)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Init &#39;</span> <span class="o">+</span> <span class="n">db_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;gmi&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">write_gml</span><span class="p">,</span> <span class="s2">&quot;gexf&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">write_gexf</span><span class="p">,</span> <span class="s2">&quot;gpickle&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">write_gpickle</span><span class="p">,</span>
+                       <span class="s2">&quot;graphml&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">write_graphml</span><span class="p">,</span> <span class="s2">&quot;yaml&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">write_yaml</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="n">save_node_link_data</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;gmi&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_gml</span><span class="p">,</span> <span class="s2">&quot;gexf&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_gexf</span><span class="p">,</span> <span class="s2">&quot;gpickle&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_gpickle</span><span class="p">,</span>
+                       <span class="s2">&quot;graphml&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_graphml</span><span class="p">,</span> <span class="s2">&quot;yaml&quot;</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_yaml</span><span class="p">}</span>
+
+        <span class="c1"># select all categories that have been added to the network so far</span>
+
+    <span class="k">def</span> <span class="nf">_split_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_s</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;please specify node as table.id&quot;</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">node_s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;node need to be separated by two or three points&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">l</span><span class="p">[:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">label</span>
+
+<div class="viewcode-block" id="MyNQL.get_categories"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.get_categories">[docs]</a>    <span class="k">def</span> <span class="nf">get_categories</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        all the categories that have been used so far</span>
+<span class="sd">        &gt;&gt;&gt; MyNQL(&quot;x&quot;).connect(&quot;person.juan&quot;, &quot;promo.promo1&quot;).get_categories()</span>
+<span class="sd">        [&#39;person&#39;, &#39;promo&#39;]</span>
+
+<span class="sd">        :return: list of categories</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">known_categories</span></div>
+
+<div class="viewcode-block" id="MyNQL.plot"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        draw graph using mathplotlib</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;this graph is to big to plot, plz save and visualize with gelphi.org&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;font_size&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">with_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MyNQL.load_serialized_node"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.load_serialized_node">[docs]</a>    <span class="k">def</span> <span class="nf">load_serialized_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">yaml_node_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        used to load network from database</span>
+<span class="sd">        :param key:</span>
+<span class="sd">        :param yaml_node_data:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">yaml_node_data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">edge</span><span class="p">)</span>
+            <span class="n">attributes</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">edge</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">edge</span><span class="p">][</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="MyNQL.save"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">typ</span><span class="o">=</span><span class="s2">&quot;gexf&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        save network to disk</span>
+<span class="sd">        :param typ: one of gmi, gexf, gpickle, graphml, yaml, node_link_data</span>
+<span class="sd">        :param path: location to save file</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;writing </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%i</span><span class="s2"> nodes)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)))</span>
+        <span class="n">typ</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="p">[</span><span class="n">typ</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">path</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">typ</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MyNQL.load"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">typ</span><span class="o">=</span><span class="s2">&quot;gexf&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        load the complete network</span>
+
+<span class="sd">        :param typ: one of gmi, gexf, gpickle, graphml, yaml, node_link_data</span>
+<span class="sd">        :param path: location of network file</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">typ</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="p">[</span><span class="n">typ</span><span class="p">](</span><span class="n">path</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">typ</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;loaded </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%i</span><span class="s2"> nodes)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)))</span></div>
+
+    <span class="k">def</span> <span class="nf">_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes_1</span><span class="p">,</span> <span class="n">nodes_2</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">distance_backward</span><span class="p">,</span> <span class="n">update_func</span><span class="p">):</span>
+        <span class="n">node1</span><span class="p">,</span> <span class="n">label1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_node</span><span class="p">(</span><span class="n">nodes_1</span><span class="p">)</span>
+        <span class="n">node2</span><span class="p">,</span> <span class="n">label2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_node</span><span class="p">(</span><span class="n">nodes_2</span><span class="p">)</span>
+        <span class="n">node12</span> <span class="o">=</span> <span class="p">[</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;distance need to be &gt; 0&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">distance_backward</span><span class="p">:</span>
+            <span class="n">distance_backward</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">backward_factor</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">distance_backward</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;distance2 need to be &gt; 0&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">node12</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">category</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">known_categories</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">known_categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">node12</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="p">(</span><span class="s2">&quot;INSERT&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">distance</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">update_func</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)</span>
+                <span class="n">update_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[</span><span class="n">node1</span><span class="p">][</span><span class="n">node2</span><span class="p">],</span> <span class="n">distance</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;edge already removed&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">distance_backward</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">update_func</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">node1</span><span class="p">)</span>
+                <span class="n">update_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[</span><span class="n">node2</span><span class="p">][</span><span class="n">node1</span><span class="p">],</span> <span class="n">distance_backward</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">node1</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;edge already removed&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">label1</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">label1</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label2</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">label2</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">)</span>
+
+        <span class="c1"># check for serializing updates</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">node12</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="p">(</span><span class="s2">&quot;UPDATE&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[</span><span class="n">obj</span><span class="p">]))</span>
+
+        <span class="c1"># check for removing not used nodes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">update_func</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">node12</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">all_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">node</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="p">(</span><span class="s2">&quot;DELETE&quot;</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">distance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;distance&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+            <span class="n">node</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">distance</span> <span class="o">+</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">node</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
+
+    <span class="k">def</span> <span class="nf">_set_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">distance</span><span class="p">):</span>
+        <span class="n">node</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
+
+<div class="viewcode-block" id="MyNQL.connect"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes1</span><span class="p">,</span> <span class="n">nodes2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">distance_backward</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rewrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        connect a relation between two nodes, is the relation already exist its closeness will be reduces.</span>
+<span class="sd">        if nodes do not exist, they will be created.</span>
+
+<span class="sd">        &gt;&gt;&gt; x = MyNQL(&quot;x&quot;).connect(&quot;table1.1&quot;,&quot;table2.3&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; x.G[(&quot;table1&quot;,&quot;1&quot;)][(&quot;table2&quot;,&quot;3&quot;)]</span>
+<span class="sd">        {&#39;distance&#39;: 1.0}</span>
+<span class="sd">        &gt;&gt;&gt; _ = x.connect(&quot;table1.1&quot;,&quot;table2.3&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; x.G[(&quot;table1&quot;,&quot;1&quot;)][(&quot;table2&quot;,&quot;3&quot;)]</span>
+<span class="sd">        {&#39;distance&#39;: 0.5}</span>
+<span class="sd">        &gt;&gt;&gt; _ = x.connect(&quot;table1.1&quot;,&quot;table2.3&quot;, rewrite=True)</span>
+<span class="sd">        &gt;&gt;&gt; x.G[(&quot;table1&quot;,&quot;1&quot;)][(&quot;table2&quot;,&quot;3&quot;)]</span>
+<span class="sd">        {&#39;distance&#39;: 1.0}</span>
+
+<span class="sd">        :param nodes1: this is a node as a tuple composed like (name/id, category)</span>
+<span class="sd">        :type nodes1: tuple</span>
+<span class="sd">        :param nodes2: this is a node as a tuple composed like (name/id, category)</span>
+<span class="sd">        :type nodes2: tuple</span>
+<span class="sd">        :param distance: the closer the distance the more both nodes are related</span>
+<span class="sd">        :type distance: float</span>
+<span class="sd">        :param distance_backward:</span>
+<span class="sd">        :type distance_backward: float</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rewrite</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_edge</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_edge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relation</span><span class="p">(</span><span class="n">nodes1</span><span class="p">,</span> <span class="n">nodes2</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">distance_backward</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="MyNQL.delete"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes1</span><span class="p">,</span> <span class="n">nodes2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">distance_backward</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; nql = MyNQL(&quot;x&quot;).connect(&quot;person.juan&quot;, &quot;promo.promo1&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; nql = nql.delete(&quot;person.juan&quot;, &quot;promo.promo1&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; nx.number_of_nodes(nql.G)</span>
+<span class="sd">        0</span>
+
+<span class="sd">        delete a connection. if nodes do not have any neighbour anymore, nodes are also deleted.</span>
+<span class="sd">        :param node1:</span>
+<span class="sd">        :param node2:</span>
+<span class="sd">        :param distance:</span>
+<span class="sd">        :param distance_backward:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relation</span><span class="p">(</span><span class="n">nodes1</span><span class="p">,</span> <span class="n">nodes2</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">distance_backward</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="MyNQL.get_distance"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.get_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">3.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        select the relation between two nodes</span>
+<span class="sd">        :param node1:</span>
+<span class="sd">        :param node2:</span>
+<span class="sd">        :return: float of</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not found&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="n">g2</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">ego_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">g2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">node2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not found&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">closeness_centrality</span><span class="p">(</span><span class="n">g2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">)[</span><span class="n">node2</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="MyNQL.select"><a class="viewcode-back" href="../../index.html#MyNQL.MyNQL.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes_1</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">in_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return [(closeness, node),..] filtered by category ordered by closeness to node1</span>
+<span class="sd">        if no nodes are found and empty list</span>
+
+<span class="sd">        :param nodes_1: the starting node for calculating closeness</span>
+<span class="sd">        :param category: the result is reduced to only elements from a specific category</span>
+<span class="sd">        :param radius:  reduce search radius to radius</span>
+<span class="sd">        :param in_order: sort output by having the best relation first</span>
+<span class="sd">        :param limit:</span>
+<span class="sd">        :param value_only:</span>
+<span class="sd">        :return: best matching nodes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">node1</span><span class="p">,</span> <span class="n">label1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_node</span><span class="p">(</span><span class="n">nodes_1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">node1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">nodes_1</span><span class="o">+</span> <span class="s2">&quot; not found&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">category</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">known_categories</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">category</span> <span class="o">+</span> <span class="s2">&quot; not found&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="c1"># avoid a too big graph, and set center</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">g2</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">ego_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">)</span>
+        <span class="c1"># calculate relation to node1</span>
+        <span class="n">node_distance</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">closeness_centrality</span><span class="p">(</span><span class="n">g2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">)</span>
+        <span class="c1"># select best nodes</span>
+        <span class="n">best_nodes</span> <span class="o">=</span> <span class="p">[(</span><span class="n">v</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_distance</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="c1"># filter to category</span>
+        <span class="n">best_nodes_matching</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">category</span> <span class="ow">and</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">node1</span><span class="p">,</span> <span class="n">best_nodes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">limit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">best_nodes_matching</span><span class="p">:</span>
+                <span class="n">best_nodes_matching</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">best_nodes_matching</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">best_nodes_matching</span><span class="p">),</span> <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">in_order</span><span class="p">:</span>
+                <span class="n">best_nodes_matching</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">best_nodes_matching</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="n">limit</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_best_relations </span><span class="si">%.2f</span><span class="s2"> seconds&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">value_only</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">table_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="nb">eval</span><span class="p">,</span> <span class="n">table_id</span> <span class="ow">in</span> <span class="n">best_nodes_matching</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">best_nodes_matching</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Florian.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
