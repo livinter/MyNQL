@@ -9,17 +9,17 @@ Concept
 
 
 * Nodes have the format ``table.id`` 
-* Connections have a distance
+* Connections have a ``distance``
 
 You may already have tables like: customers, merchants, products, places, areas, promotions, interests. 
-Each entry in your database used to have an id/key. So ``table.id`` defines everything you have.
+Most of the times in a relational database there is an id/key, so with ``table.id`` all entries can be addressed.
 
-Teach the MyNQL network relations between two ``table.id`` <-> ``table.id`` you know, and ask the network about all the (indirect) relations you like to know.
+Teach the MyNQL network relations between two ``table1.id1`` <-> ``table2.id2`` you know,
+and then ask the network about all the (indirect) relations you like to know.
 
 **This is very simple, but also very powerful!** You define a starting point, and search for the closest matches of a desired table.
 When you add more connections your questions will stay the same, only the results will improve.
-If you like to see a real live example look this example.
-https://github.com/livinter/MyNQL/blob/master/test/computerstore.py#L28
+If you like to see a real live example look this example, here is an example with a `Computer Store <https://github.com/livinter/MyNQL/blob/master/test/computerstore.py#L28>`_.
 
 Install
 -------

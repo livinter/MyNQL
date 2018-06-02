@@ -64,7 +64,8 @@ class MyNQL:
 
     def get_categories(self):
         """
-        all the categories that have been used so far
+        all the categories that have been used so far.
+
         >>> MyNQL("x").connect("person.juan", "promo.promo1").get_categories()
         ['person', 'promo']
 
@@ -214,9 +215,9 @@ class MyNQL:
         {'distance': 1.0}
 
         :param nodes1: this is a node as a tuple composed like (name/id, category)
-        :type nodes1: tuple
+        :type nodes1: basestring
         :param nodes2: this is a node as a tuple composed like (name/id, category)
-        :type nodes2: tuple
+        :type nodes2: basestring
         :param distance: the closer the distance the more both nodes are related
         :type distance: float
         :param distance_backward:
@@ -270,11 +271,16 @@ class MyNQL:
         if no nodes are found and empty list
 
         :param nodes_1: the starting node for calculating closeness
+        :type nodes_1: basestring
         :param category: the result is reduced to only elements from a specific category
+        :type category: basestring
         :param radius:  reduce search radius to radius
+        :type radius: float
         :param in_order: sort output by having the best relation first
-        :param limit:
-        :param value_only:
+        :type in_order: bool
+        :param limit: limit the amount of results to an number
+        :type limit: int
+        :param value_only: only return the id, without score
         :return: best matching nodes
         """
 
