@@ -10,7 +10,7 @@ Welcome to MyNQL's documentation!
 
 Readme
 ------
-.. include:: ../README.md
+.. include:: ../README.rst
 
 The “MyNQL” module
 ------------------
