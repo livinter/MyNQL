@@ -1,8 +1,10 @@
 from MyNQL import MyNQL
 from peewee import *
+import os
 
 # select SQLite/Postgres/MySQL
-db = SqliteDatabase('sample.db', pragmas={
+databse_name = 'sample.db'
+db = SqliteDatabase(databse_name, pragmas={
     'journal_mode': 'wal',
     'cache_size': -1024 * 64})
 
@@ -37,7 +39,7 @@ def peewee_serializer(action, key, text):
 
 def peewee_load_network(nql):
     for node in Node.select():
-        nql.load_serialized_node((node.name, node.category), node.relation)
+        nql.load_serialized_node((node.category, node.name), node.relation)
 
 
 peewee_create_tables()
@@ -57,3 +59,4 @@ mynql2 = MyNQL("hangango_2")
 peewee_load_network(mynql2)
 mynql2.plot()
 
+os.remove(databse_name)
