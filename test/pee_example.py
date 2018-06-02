@@ -24,7 +24,7 @@ def peewee_create_tables():
 
 def peewee_serializer(action, key, text):
     # print (time.time(),action, key)
-    nam, cat = key
+    cat, nam = key
     if action == "INSERT":
         Node.create(name=nam, category=cat, relation=text)
     if action == "UPDATE":
@@ -42,18 +42,17 @@ def peewee_load_network(nql):
 
 peewee_create_tables()
 mynql = MyNQL("hangango", serializer=peewee_serializer)
-mynql.add(("juan", "person"), ("email_promo1", "promo"), distance=1.)
-mynql.add(("juan", "person"), ("netbuy", "shop"), distance=1.)
-mynql.add(("miguel", "person"), ("email_promo1", "promo"), distance=1.0)
-mynql.add(("jose", "person"), ("email_promo1", "promo"), distance=1.0)
-mynql.add(("maria", "person"), ("netbuy", "shop"), distance=0.1)
-mynql.add(("maria", "person"), ("email_promo1", "promo"), distance=1.)
-mynql.set(("maria", "person"), ("email_promo1", "promo"), distance=0.1)
-mynql.delete(("jose", "person"), ("email_promo1", "promo"))
-print(mynql.get(("juan", "person"), "person"))
+mynql.connect("person.juan", "promo.email_promo1", distance=1.)
+mynql.connect("person.juan", "shop.netbuy", distance=1.)
+mynql.connect("person.miguel", "promo.email_promo1", distance=1.0)
+mynql.connect("person.jose", "promo.email_promo1", distance=1.0)
+mynql.connect("person.maria", "shop.netbuy", distance=0.1)
+mynql.connect("person.maria", "promo.email_promo1", distance=1.)
+mynql.delete("person.jose", "promo.email_promo1")
+print(mynql.select("person.juan", "person"))
 mynql.plot()
 
-mynql2 = MyNQL("hangango2")
+mynql2 = MyNQL("hangango_2")
 
 peewee_load_network(mynql2)
 mynql2.plot()

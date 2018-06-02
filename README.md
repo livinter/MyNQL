@@ -3,27 +3,24 @@
 
 ## Concept
 
-A good foundation is a simple concept:
- * Nodes have a type/category and a id/key
- * Connections only have a distance
- 
-You may have types/categories like: customers, customer_attributes, merchants, merchant_attributes, products, 
-places, areas, promotions, interests. This categories are often the name of the tables in your relational database.
-Each entry in your database used to have an id/key.
+**A good foundation is a simple concept:** 
+ * Nodes have the format `table.id` 
+ * Connections have a distance
+  
+You may already have tables like: customers, merchants, products, places, areas, promotions, interests. 
+Each entry in your database used to have an id/key. So `table.id` defines everything you have.
 
-As every item in your database can be identified this way, all nodes need to be organized as tuples in the format `(id/key/name, type/category)`
+Teach the MyNQL network relations between two `table.id` <-> `table.id` you know, and ask the network about all the (indirect) relations you like to know.
 
-Now teach the network by telling all the known relations, and ask the network about all the (indirect) relations you like to know.
-
-**This is very simple, but also very powerful!** You define a starting point, and search for the closest matches of a desired type/category.
+**This is very simple, but also very powerful!** You define a starting point, and search for the closest matches of a desired table.
 When you add more connections your questions will stay the same, only the results will improve.
 If you like to see a real live example look this example.
 https://github.com/livinter/MyNQL/blob/master/test/computerstore.py#L28
 
 
 
-
 ## Install
+
 ```
 git clone https://github.com/livinter/MyNQL.git
 python setup.py install
@@ -34,9 +31,8 @@ python setup.py install
 
 You can do relations between those nodes using:
 
-  * `add` - to create or to add a relation
-  * `set` - to create or to set a relation
-  * `delete` - delete a relation
+  * `connect` - connect two nodes
+  * `delete` - delete a connection
 
 The nodes will be created when they have connections, and remove if they have no more connections.
 
@@ -44,10 +40,9 @@ Optional you can specify a distance between nodes.
 
 ## Ask the network
 
-  * `get` - gives you the best related nodes from a specified category
-  * `get_best` - tells you have good two nodes are related
+  * `select` - gives you the best related nodes from a specified category
 
-To calculate how good two nodes are connected, all the different ways are taken into consideration up to a radius you can specify.
+To calculate how good two nodes are connected, all the different ways are taken into consideration up to a radius you specify.
 
 
 ## Design
@@ -58,20 +53,10 @@ Table *customer*
 
 | Id      | Name     | ..  |
 | ------- | -------- | --- |
-| 101     | Jose     | ... |
-| 102     | Maria    | ... |
-| 103     | Juan     | ... |
+| 101     | jose     | ... |
+| 102     | maria    | ... |
+| 103     | juan     | ... |
 ....
-
-Table *product*
-
-| Id      | Name     | ..  |
-| ------- | -------- | --- |
-| 101     | jeans    | ... |
-| 102     | heat     | ... |
-| 103     | socks    | ... |
-....
-
 
 And you want to discover new relations.
 
@@ -79,28 +64,25 @@ First you teach your network:
 
 ```
 from MyNQL import MyNQL
-mynql = MyNQL("computerstore")
+mynql = MyNQL("store")
 
-mynql.add(("Juan", "customer"), ("jeans", "product"))
-mynql.add(("Juan", "customer"), ("socks", "product"))
-mynql.add(("Maria", "customer"), ("socks", "product"))
+mynql.connect("customer.juan", "product.jeans")
+mynql.connect("customer.juan",  "product.socks" )
+mynql.connect("customer.maria", "product.socks" )
 ```
 
 Then you can ask questions from other points of view.
-You always specify a starting point, and the category where you want to know the best matches.
+You always specify a starting point, and the category where you want to know the best matches:
 ```
-
-products_related_to_juan = mynql.get(("Juan", "customer"), ("product"))
-products_related_to_jeans = mynql.get(("jeans", "product"), ("product"))
-
+products_related_to_juan = mynql.select("customer.juan", "product")
+products_related_to_jeans = mynql.select("product.jeans", "product")
 ```
 
 
 ## Back-end
 
-You can put into place easily any database as a backed-storage replacing `utils.fakedb_serializer.`
-This will keep a copy of all updates in your database. To load the network from the database after starting use MyNQL.`load_serialized_node` for each node.
-If you want to use MySQL, SQLite or Postgresql you can look at `test/pee_example.py`.
+Storage is done in memory, but if you want to use MySQL, SQLite or Postgresql as a backend take a look at `test/pee_example.py`.
+This will keep a copy of all updates in your database. 
 
 
 

@@ -1,15 +1,10 @@
-"""
-
-
-"""
-
 import logging
 import time
 import sys
-
+import six
 import networkx as nx
 import yaml
-import mynql.utils as utils
+from MyNQL.utils import fake_db_serializer, save_node_link_data
 
 
 class MyNQL:
@@ -23,7 +18,7 @@ class MyNQL:
         :type log_file: string
         :param serializer: function to serialize all changes to database, see utils.fake_db_serializer as sample
         :param log_level: detail of logging
-        :param backward_factor standard multiplicator from distance_backward in relation to distance
+        :param backward_factor standard multiplier from distance_backward in relation to distance
         :type backward_factor float
         :return:
         """
@@ -47,16 +42,30 @@ class MyNQL:
         self.logger.debug('Init ' + db_name)
 
         self.writer = {"gmi": nx.write_gml, "gexf": nx.write_gexf, "gpickle": nx.write_gpickle,
-                       "graphml": nx.write_graphml, "yaml": nx.write_yaml, "json": utils.save_node_link_data}
+                       "graphml": nx.write_graphml, "yaml": nx.write_yaml, "json": save_node_link_data}
         self.reader = {"gmi": nx.read_gml, "gexf": nx.read_gexf, "gpickle": nx.read_gpickle,
                        "graphml": nx.read_graphml, "yaml": nx.read_yaml}
 
-        # get all categories that have been added to the network so far
+        # select all categories that have been added to the network so far
+
+    def _split_node(self, node_s):
+        if not isinstance(node_s, six.string_types):
+            self.logger.error("please specify node as table.id")
+        l = node_s.split(".")
+        label = ""
+        if len(l) == 2:
+            pass
+        elif len(l) == 3:
+            label = l[2]
+        else:
+            self.logger.error("node need to be separated by two or three points")
+
+        return tuple(l[:2]), label
 
     def get_categories(self):
         """
         all the categories that have been used so far
-        >>> MyNQL("x").add(("juan", "person"), ("promo1", "promo")).get_categories()
+        >>> MyNQL("x").connect("person.juan", "promo.promo1").get_categories()
         ['person', 'promo']
 
         :return: list of categories
@@ -119,15 +128,10 @@ class MyNQL:
         self.G = self.reader[typ](path + self.db_name + "." + typ)
         self.logger.debug("loaded %s (%i nodes)" % (self.db_name, len(self.G)))
 
-    def _relation(self, node1, node2, distance, distance_backward, update_func):
+    def _relation(self, nodes_1, nodes_2, distance, distance_backward, update_func):
+        node1, label1 = self._split_node(nodes_1)
+        node2, label2 = self._split_node(nodes_2)
         node12 = [node1, node2]
-        for obj in node12:
-            if type(obj) != tuple:
-                self.logger.error("key eed to be tuple")
-            if len(obj) != 2:
-                self.logger.error("len(key) need to be 2")
-            if type(obj[0]) not in [type(""), int]:
-                self.logger.error("elements need to be string or int")
 
         if not distance > 0.:
             self.logger.error("distance need to be > 0")
@@ -137,7 +141,7 @@ class MyNQL:
         if not distance_backward > 0.:
             self.logger.error("distance2 need to be > 0")
 
-        for _, category in node12:
+        for category, _ in node12:
             if category not in self.known_categories:
                 self.known_categories.append(category)
 
@@ -166,6 +170,11 @@ class MyNQL:
                 except:
                     self.logger.warning('edge already removed')
 
+        if label1:
+            nx.set_node_attributes(self.G, label1, 'label')
+        if label2:
+            nx.set_node_attributes(self.G, label2, 'label')
+
         # check for serializing updates
         if self.serializer:
             for obj in node12:
@@ -189,146 +198,123 @@ class MyNQL:
     def _set_edge(self, node, distance):
         node["distance"] = distance
 
-    def add(self, node1, node2, distance=1., distance_backward=None):
+    def connect(self, nodes1, nodes2, distance=1., distance_backward=None, rewrite=False):
         """
-        add a relation between two nodes, is the relation already exist its closeness will be reduces
+        connect a relation between two nodes, is the relation already exist its closeness will be reduces.
+        if nodes do not exist, they will be created.
 
-        >>> x = MyNQL("x").add((1,1),(3,3))
-        >>> x.G[(1,1)][(3,3)]
+        >>> x = MyNQL("x").connect("table1.1","table2.3")
+        >>> x.G[("table1","1")][("table2","3")]
         {'distance': 1.0}
-        >>> _ = x.add((1,1),(3,3))
-        >>> x.G[(1,1)][(3,3)]
+        >>> _ = x.connect("table1.1","table2.3")
+        >>> x.G[("table1","1")][("table2","3")]
         {'distance': 0.5}
+        >>> _ = x.connect("table1.1","table2.3", rewrite=True)
+        >>> x.G[("table1","1")][("table2","3")]
+        {'distance': 1.0}
 
-
-        :param node1: this is a node as a tuple composed like (name/id, category)
-        :type node1: tuple
-        :param node2: this is a node as a tuple composed like (name/id, category)
-        :type node2: tuple
+        :param nodes1: this is a node as a tuple composed like (name/id, category)
+        :type nodes1: tuple
+        :param nodes2: this is a node as a tuple composed like (name/id, category)
+        :type nodes2: tuple
         :param distance: the closer the distance the more both nodes are related
         :type distance: float
         :param distance_backward:
         :type distance_backward: float
         :return:
         """
-        self._relation(node1, node2, distance, distance_backward, self._add_edge)
+        if rewrite:
+            action = self._set_edge
+        else:
+            action = self._add_edge
+        self._relation(nodes1, nodes2, distance, distance_backward, action)
         return self
 
-    def set(self, node1, node2, distance=1., distance_backward=None):
-        """
-        >>> x = MyNQL("x").set((1,1),(3,3))
-        >>> x.G[(1,1)][(3,3)]
-        {'distance': 1.0}
-        >>> _ = x.set((1,1),(3,3))
-        >>> x.G[(1,1)][(3,3)]
-        {'distance': 1.0}
 
-        set a relation between two nodes, is the relation already exist its closeness will be overwritten
-        :param node1: this is a node as a tuple composed like (name/id, category)
-        :type node1: tuple
-        :param node2: this is a node as a tuple composed like (name/id, category)
-        :type node2: tuple
-        :param distance: the closer the distance the more both nodes are related
-        :type distance: float
-        :param distance_backward:
-        :type distance_backward: float
-        :return:
+    def delete(self, nodes1, nodes2, distance=1., distance_backward=None):
         """
-        self._relation(node1, node2, distance, distance_backward, self._set_edge)
-        return self
-
-    def delete(self, node1, node2, distance=1., distance_backward=None):
-        """
-        >>> nql = MyNQL("x").add(("juan", "person"), ("promo1", "promo"))
-        >>> nql = nql.delete(("juan", "person"), ("promo1", "promo"))
+        >>> nql = MyNQL("x").connect("person.juan", "promo.promo1")
+        >>> nql = nql.delete("person.juan", "promo.promo1")
         >>> nx.number_of_nodes(nql.G)
         0
 
-        delete a connection
+        delete a connection. if nodes do not have any neighbour anymore, nodes are also deleted.
         :param node1:
         :param node2:
         :param distance:
         :param distance_backward:
         :return:
         """
-        self._relation(node1, node2, distance, distance_backward, None)
+        self._relation(nodes1, nodes2, distance, distance_backward, None)
         return self
 
     def get_distance(self, node1, node2, radius=3.):
         """
-        get the relation between two nodes
+        select the relation between two nodes
         :param node1:
         :param node2:
         :return: float of
         """
         if node1 not in self.G:
-            self.logger.error(str(node1)+" not found")
+            self.logger.error(str(node1) + " not found")
             return float('inf')
         g2 = nx.ego_graph(self.G, node1, radius=radius, center=True, distance="distance")
         if node2 not in g2:
-            self.logger.debug(str(node2)+" not found")
+            self.logger.debug(str(node2) + " not found")
             return float('inf')
         return nx.closeness_centrality(g2, distance="distance")[node2]
 
-    def _get(self, node1, category, radius, in_order=True, best_only=False):
+    def select(self, nodes_1, category, radius=3., in_order=True, limit=None, value_only=True):
+        """
+        return [(closeness, node),..] filtered by category ordered by closeness to node1
+        if no nodes are found and empty list
+
+        :param nodes_1: the starting node for calculating closeness
+        :param category: the result is reduced to only elements from a specific category
+        :param radius:  reduce search radius to radius
+        :param in_order: sort output by having the best relation first
+        :param limit:
+        :param value_only:
+        :return: best matching nodes
+        """
+
+        node1, label1 = self._split_node(nodes_1)
 
         if node1 not in self.G:
-            self.logger.error(str(node1)+" not found")
+            self.logger.error(nodes_1+ " not found")
             return []
 
         if category not in self.known_categories:
-            self.logger.error(str(category)+" not found")
+            self.logger.error(category + " not found")
             return []
         # avoid a too big graph, and set center
         start = time.time()
         g2 = nx.ego_graph(self.G, node1, radius=radius, center=True, distance="distance")
         # calculate relation to node1
         node_distance = nx.closeness_centrality(g2, distance="distance")
-        # get best nodes
+        # select best nodes
         best_nodes = [(v, k) for k, v in node_distance.items()]
         # filter to category
-        best_nodes_matching = filter(lambda e: e[1][1] == category and e[1] != node1, best_nodes)
+        best_nodes_matching = filter(lambda e: e[1][0] == category and e[1] != node1, best_nodes)
 
-        if best_only:
+        if limit == 1:
             if not best_nodes_matching:
-                return None
+                best_nodes_matching = []
             else:
-                return max(best_nodes_matching)[1][0]
+                best_nodes_matching = [max(best_nodes_matching), ]
+        else:
+            if in_order:
+                best_nodes_matching = sorted(best_nodes_matching, reverse=True)[:limit]
 
-        if in_order:
-            best_nodes_matching = sorted(best_nodes_matching, reverse=True)
         self.logger.debug("get_best_relations %.2f seconds" % (time.time() - start))
 
-        return best_nodes_matching
-
-    def get(self, node1, category, radius=3., in_order=True):
-        """
-        return [(closeness, node),..] filtered by category ordered by closeness to node1
-        if no nodes are found and empty list
-
-        :param node1: the starting node for calculating closeness
-        :type: tuple
-        :param category: the result is reduced to only elements from a specific category
-        :type: string
-        :param radius: reduce search radius to radius
-        :type: float
-        :param in_order: sort output by having the best relation first
-        :type: bool
-        :return: best matching nodes
-        """
-        return self._get(node1, category, radius, in_order)
-
-    def get_best(self, node1, category, radius=3.):
-        """
-        return just the best matching node value, if no node has been found None is returned
-        :param node1:
-        :param category:
-        :param radius:
-        :return:
-        """
-        return self._get(node1, category, radius, best_only=True)
+        if value_only:
+            return [table_id[1] for eval, table_id in best_nodes_matching]
+        else:
+            return best_nodes_matching
 
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
