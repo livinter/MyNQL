@@ -1,5 +1,5 @@
 networkx
-yaml
+pyyaml
 matplotlib
 json
 peewee
