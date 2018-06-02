@@ -56,27 +56,37 @@ Table *customer*
 | 101     | jose     | ... |
 | 102     | maria    | ... |
 | 103     | juan     | ... |
-....
 
 And you want to discover new relations.
 
-First you teach your network:
-
+First you teach your network.
 ```
 from MyNQL import MyNQL
-mynql = MyNQL("store")
+mynql = MyNQL('store')
 
-mynql.connect("customer.juan", "product.jeans")
-mynql.connect("customer.juan",  "product.socks" )
-mynql.connect("customer.maria", "product.socks" )
+mynql.connect('customer.juan', 'product.jeans')
+mynql.connect('customer.juan',  'product.socks')
+mynql.connect('customer.maria', 'product.socks')
 ```
 
-Then you can ask questions from other points of view.
-You always specify a starting point, and the category where you want to know the best matches:
+If the colum `Name` is unique you can use it as a key, otherwise you would need colum `Id`, and your code would look like this: 
 ```
-products_related_to_juan = mynql.select("customer.juan", "product")
-products_related_to_jeans = mynql.select("product.jeans", "product")
+mynql.connect("customer.103', 'product.12')
 ```
+
+Now you can ask questions from other points of view. You always specify a starting point, and the category where you want to know the best matches:
+```
+>>> mynql.select('customer.maria', 'product')
+['socks', 'jeans']
+```
+Maria is more connected to `socks`, as she has a direct connection, but also a bit to `jeans` as there exist an indirect connection through Juan.
+
+
+```
+>>> mynql.select('product.jeans', 'product')
+['socks']
+```
+Any combination is valid. For example you can ask about how one product is related to other. 
 
 
 ## Back-end

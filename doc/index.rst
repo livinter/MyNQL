@@ -8,8 +8,14 @@ Welcome to MyNQL's documentation!
 
 .. automodule:: MyNQL
 
+Readme
+------
+.. include:: ../README.md
+
 The “MyNQL” module
 ------------------
 
 .. autoclass:: MyNQL
    :members:
+
+
