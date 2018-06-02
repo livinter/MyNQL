@@ -29,6 +29,12 @@ Install
    git clone https://github.com/livinter/MyNQL.git
    python setup.py install
 
+or 
+
+.. code-block:: bash
+
+   pip install MyNQL
+
 Teach the Network
 -----------------
 

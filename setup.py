@@ -10,19 +10,19 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='MyNQL',
-      version='0.1',
+      version='0.2',
       description='My Network Query Language',
       long_description=long_description,
       author='Florian Scholz',
       author_email='livint@posteo.de',
-      url='https://www.github.com/livinter/MyNQL/',
+      url='http://mynql.readthedocs.io/en/latest/',
       packages=['MyNQL', ],
       classifiers=[
           'Development Status :: 4 - Beta',
 
           # Indicate who your project is intended for
           'Intended Audience :: Developers',
-          'Topic :: Software Development :: Recommendation Network Database',
+#          'Topic :: Software Development :: Recommendation Network',
 
           # Pick your license as you wish
           'License :: OSI Approved :: MIT License',
