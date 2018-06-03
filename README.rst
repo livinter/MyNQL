@@ -1,35 +1,16 @@
 
-MyNQL
-=====
-
-Concept
--------
-
-**A good foundation is a simple concept:** 
-
-
-* Nodes have the format ``table.id`` 
-* Connections have a ``distance``
-
-You may already have tables like: customers, merchants, products, places, areas, promotions, interests. 
-Most of the times in a relational database there is an id/key, so with ``table.id`` all entries can be addressed.
-
-Teach the MyNQL network relations between two ``table1.id1`` <-> ``table2.id2`` you know,
-and then ask the network about all the (indirect) relations you like to know.
-
-**This is very simple, but also very powerful!** You define a starting point, and search for the closest matches of a desired table.
-When you add more connections your questions will stay the same, only the results will improve.
-If you like to see a real live example look this example, here is an example with a `Computer Store <https://github.com/livinter/MyNQL/blob/master/test/computerstore.py#L28>`_.
 
 Install
 -------
+
+MyNLQ’s source code hosted on `GitHub <https://github.com/livinter/MyNQL>`_.
 
 .. code-block:: bash
 
    git clone https://github.com/livinter/MyNQL.git
    python setup.py install
 
-or 
+or just
 
 .. code-block:: bash
 
@@ -38,30 +19,31 @@ or
 Teach the Network
 -----------------
 
-You can do relations between those nodes using:
-
+For example if a customer make a purchase of a product you assume a relation between ``customer.id`` and ``product.id``,
+so you connect them. Optional you can specify a distance between nodes, to represent how close the nodes are related.
 
 * ``connect`` - connect two nodes
 * ``delete`` - delete a connection
 
-The nodes will be created when they have connections, and remove if they have no more connections.
+Nodes are created automatically when you do the connection, and removed if they do not have any more connections. So do not worry about them.
 
-Optional you can specify a distance between nodes.
 
-Ask the network
+Ask the Network
 ---------------
 
+Now you can query all kinds of relations, not only the once you taught. With select you specify a starting point, like
+``customer.id`` and specify the category where you like to know its closes relation.
 
 * ``select`` - gives you the best related nodes from a specified category
 
-To calculate how good two nodes are connected, all the different ways are taken into consideration up to a radius you specify.
+The searching query takes into account all the different routes up to a radius you specify.
 
-Design
-------
+Example
+-------
 
-Imagen you have
 
-Table *customer*
+Lets imagine we already have a table *customer*
+
 
 .. list-table::
    :header-rows: 1
@@ -79,10 +61,7 @@ Table *customer*
      - juan
      - ...
 
-
-And you want to discover new relations.
-
-First you teach your network.
+and you want to teach the network about recent purchases.
 
 .. code-block:: python
 
@@ -93,7 +72,7 @@ First you teach your network.
    mynql.connect('customer.juan',  'product.socks')
    mynql.connect('customer.maria', 'product.socks')
 
-If the colum ``Name`` is unique you can use it as a key, otherwise you would need colum ``Id``\ , and your code would look like this: 
+If the column ``Name`` is unique you can use it as a key, otherwise you would need column ``Id``\ , and your code would look like this:
 
 .. code-block:: python
 
@@ -106,7 +85,7 @@ Now you can ask questions from other points of view. You always specify a starti
    >>> mynql.select('customer.maria', 'product')
    ['socks', 'jeans']
 
-Maria is more connected to ``socks``\ , as she has a direct connection, but also a bit to ``jeans`` as there exist an indirect connection through Juan.
+Maria is more connected to ``socks``, as she has a direct connection, but also a bit to ``jeans`` as there exist an indirect connection through Juan.
 
 .. code-block:: python
 
@@ -115,8 +94,9 @@ Maria is more connected to ``socks``\ , as she has a direct connection, but also
 
 Any combination is valid. For example you can ask about how one product is related to other. 
 
-Back-end
---------
 
-Storage is done in memory, but if you want to use MySQL, SQLite or Postgresql as a backend take a look at ``test/pee_example.py``.
+Backend
+-------
+
+Storage is done in memory, but if you want to use MySQL, SQLite or PostgreSQL as a backend take a look at ``test/pee_example.py``.
 This will keep a copy of all updates in your database. 
