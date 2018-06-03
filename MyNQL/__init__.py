@@ -3,7 +3,7 @@ MyNQL
 =====
 
 MyNQL is a minimalistic `graph database <https://en.wikipedia.org/wiki/Graph_database>`_ based on the `Python <http://python.org>`_ library `Networkx <https://networkx.github.io/>`_.
-Instead of replacing yor relational database, it helps you to add a network with references to the data you already have.
+Instead of replacing your relational database, it helps you to add a network with references to the data you already have.
 
 * Nodes have the format ``table.id``
 * Connections (only) have a ``distance``
