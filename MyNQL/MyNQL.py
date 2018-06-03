@@ -8,7 +8,14 @@ from MyNQL.utils import fake_db_serializer, save_node_link_data
 
 
 class MyNQL:
-    def __init__(self, db_name, log_file=None, serializer=None, log_level=logging.ERROR, backward_factor=.5):
+    """
+    The MyNQL class
+    log_level and log_file can be used to get debugging information to screen or to a logfile.
+    For details regarding logging refer to the python lib logging.
+    The serializer allow you to save the data into a database. See the pee_example for reference.
+
+    """
+    def __init__(self, db_name,  serializer=None, log_file=None, log_level=logging.ERROR, backward_factor=.5):
         """
         create a MyNQL server
 
@@ -75,8 +82,9 @@ class MyNQL:
 
     def plot(self):
         """
-        draw graph using mathplotlib
-        :return:
+        draw the graph using mathplotlib
+
+        :return: None
         """
         import matplotlib.pyplot as plt
 
@@ -94,9 +102,10 @@ class MyNQL:
     def load_serialized_node(self, key, yaml_node_data):
         """
         used to load network from database
+
         :param key:
         :param yaml_node_data:
-        :return:
+        :return: None
         """
         self.G.add_node(key)
         edges = yaml.load(yaml_node_data)
@@ -109,6 +118,7 @@ class MyNQL:
     def save(self, typ="gexf", path=""):
         """
         save network to disk
+
         :param typ: one of gmi, gexf, gpickle, graphml, yaml, node_link_data
         :param path: location to save file
         :return:
@@ -123,7 +133,7 @@ class MyNQL:
 
         :param typ: one of gmi, gexf, gpickle, graphml, yaml, node_link_data
         :param path: location of network file
-        :return:
+        :return: None
         """
         typ = typ.lower()
         self.G = self.reader[typ](path + self.db_name + "." + typ)
@@ -201,8 +211,8 @@ class MyNQL:
 
     def connect(self, nodes1, nodes2, distance=1., distance_backward=None, rewrite=False):
         """
-        connect a relation between two nodes, is the relation already exist its closeness will be reduces.
-        if nodes do not exist, they will be created.
+        connect two nodes, if the relation already exist its closeness will be reduces.
+        nodes are created if they do not exist.
 
         >>> x = MyNQL("x").connect("table1.1","table2.3")
         >>> x.G[("table1","1")][("table2","3")]
@@ -220,9 +230,9 @@ class MyNQL:
         :type nodes2: basestring
         :param distance: the closer the distance the more both nodes are related
         :type distance: float
-        :param distance_backward:
+        :param distance_backward: distance from node 2 to node 1
         :type distance_backward: float
-        :return:
+        :return: None
         """
         if rewrite:
             action = self._set_edge
@@ -231,30 +241,29 @@ class MyNQL:
         self._relation(nodes1, nodes2, distance, distance_backward, action)
         return self
 
-
-    def delete(self, nodes1, nodes2, distance=1., distance_backward=None):
+    def delete(self, nodes1, nodes2):
         """
+        delete a connection. if nodes do not have any neighbour anymore, nodes are also deleted.
+
         >>> nql = MyNQL("x").connect("person.juan", "promo.promo1")
         >>> nql = nql.delete("person.juan", "promo.promo1")
         >>> nx.number_of_nodes(nql.G)
         0
 
-        delete a connection. if nodes do not have any neighbour anymore, nodes are also deleted.
-        :param node1:
-        :param node2:
-        :param distance:
-        :param distance_backward:
-        :return:
+        :param node1: node 1
+        :param node2: node 2
+        :return: None
         """
-        self._relation(nodes1, nodes2, distance, distance_backward, None)
+        self._relation(nodes1, nodes2, 0., 0., None)
         return self
 
     def get_distance(self, node1, node2, radius=3.):
         """
         select the relation between two nodes
-        :param node1:
-        :param node2:
-        :return: float of
+
+        :param node1: node 1
+        :param node2: node 2
+        :return: total distance as float
         """
         if node1 not in self.G:
             self.logger.error(str(node1) + " not found")
@@ -267,13 +276,15 @@ class MyNQL:
 
     def select(self, nodes_1, category, radius=3., in_order=True, limit=None, value_only=True):
         """
-        return [(closeness, node),..] filtered by category ordered by closeness to node1
-        if no nodes are found and empty list
+        select the most matching nodes of a specific category ordered by closeness to node1.
+        if value_only is True only the IDs are returned otherwise the score as closeness
+        comes with the tuple of the data. [(closeness, (node, id)),..]
+        if no nodes are found and empty list is returned.
 
         :param nodes_1: the starting node for calculating closeness
-        :type nodes_1: basestring
+        :type nodes_1: str
         :param category: the result is reduced to only elements from a specific category
-        :type category: basestring
+        :type category: str
         :param radius:  reduce search radius to radius
         :type radius: float
         :param in_order: sort output by having the best relation first
@@ -287,7 +298,7 @@ class MyNQL:
         node1, label1 = self._split_node(nodes_1)
 
         if node1 not in self.G:
-            self.logger.error(nodes_1+ " not found")
+            self.logger.error(nodes_1 + " not found")
             return []
 
         if category not in self.known_categories:
