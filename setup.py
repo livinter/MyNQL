@@ -10,13 +10,16 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='MyNQL',
-      version='0.2',
+      version='0.2.1',
       description='My Network Query Language',
       long_description=long_description,
       author='Florian Scholz',
       author_email='livint@posteo.de',
       url='http://mynql.readthedocs.io/en/latest/',
       packages=['MyNQL', ],
+      data_files=[
+        ("", ["LICENSE.txt"]) 
+      ],
       classifiers=[
           'Development Status :: 4 - Beta',
 
@@ -37,6 +40,6 @@ setup(name='MyNQL',
           'Programming Language :: Python :: 3.6',
       ],
       keywords='recommendation query language',
-      install_requires=['networkx', 'pyyaml', 'peewee'],
+      install_requires=['networkx', 'pyyaml', 'peewee', 'six'],
 )
 

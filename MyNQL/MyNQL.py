@@ -4,7 +4,7 @@ import sys
 import six
 import networkx as nx
 import yaml
-from MyNQL.utils import fake_db_serializer, save_node_link_data
+from utils import fake_db_serializer, save_node_link_data
 
 
 class MyNQL:
@@ -254,7 +254,7 @@ class MyNQL:
         :param node2: node 2
         :return: None
         """
-        self._relation(nodes1, nodes2, 0., 0., None)
+        self._relation(nodes1, nodes2, 1., 1., None)
         return self
 
     def get_distance(self, node1, node2, radius=3.):

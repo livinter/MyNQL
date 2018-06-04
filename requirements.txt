@@ -2,3 +2,4 @@ networkx
 pyyaml
 matplotlib
 peewee
+six

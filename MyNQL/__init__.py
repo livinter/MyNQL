@@ -29,4 +29,4 @@ Bug reports::
 import logging
 from logging import WARN, DEBUG, INFO
 from MyNQL.MyNQL import *
-
+from MyNQL import utils
