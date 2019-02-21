@@ -1,5 +1,5 @@
-networkx
-pyyaml
+networkx==2.1
 matplotlib
 peewee
 six
+pyyaml

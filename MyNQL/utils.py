@@ -1,6 +1,8 @@
 import networkx as nx
 
 fake_db = {}
+
+
 # replace this with your favourite database
 # should be a key value store, the key may be converted to/from tuple and the data-field should be text
 def fake_db_serializer(action, key, text):
@@ -20,9 +22,3 @@ def fake_db_serializer(action, key, text):
 def save_node_link_data(G, file):
     import json
     open(file, "w").write(json.dumps(nx.node_link_data(G)))
-
-
-
-
-
-

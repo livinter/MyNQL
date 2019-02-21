@@ -1,10 +1,12 @@
-import logging
-import time
-import sys
-import six
-import networkx as nx
 import yaml
-from utils import fake_db_serializer, save_node_link_data
+import json
+import logging
+import sys
+import time
+
+import networkx as nx
+import six
+from MyNQL.utils import save_node_link_data
 
 
 class MyNQL:
@@ -15,7 +17,8 @@ class MyNQL:
     The serializer allow you to save the data into a database. See the pee_example for reference.
 
     """
-    def __init__(self, db_name,  serializer=None, log_file=None, log_level=logging.ERROR, backward_factor=.5):
+
+    def __init__(self, db_name, serializer=None, log_file=None, log_level=logging.ERROR, backward_factor=.5):
         """
         create a MyNQL server
 
@@ -98,17 +101,17 @@ class MyNQL:
         nx.draw(self.G, with_labels=True, **options)
         plt.show()
 
-
-    def load_serialized_node(self, key, yaml_node_data):
+    def load_serialized_node(self, key, json_node_data):
         """
         used to load network from database
 
         :param key:
-        :param yaml_node_data:
+        :param json_node_data:
         :return: None
         """
         self.G.add_node(key)
-        edges = yaml.load(yaml_node_data)
+        print(json_node_data, type(json_node_data))
+        edges = yaml.load(json_node_data)
         for edge in edges:
             self.G.add_edge(key, edge)
             attributes = edges[edge]
@@ -189,6 +192,9 @@ class MyNQL:
         # check for serializing updates
         if self.serializer:
             for obj in node12:
+                # todo: need better way to serialze networkx node data
+                # to not include class name like !!python/object:networkx.classes.coreviews.AtlasView
+                # for this rason using yaml not json.
                 self.serializer("UPDATE", obj, yaml.dump(self.G[obj]))
 
         # check for removing not used nodes
@@ -333,5 +339,4 @@ class MyNQL:
 
 if __name__ == "__main__":
     import doctest
-
     doctest.testmod()
