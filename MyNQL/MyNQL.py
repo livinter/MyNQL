@@ -61,14 +61,20 @@ class MyNQL:
     def _split_node(self, node_s):
         if not isinstance(node_s, six.string_types):
             self.logger.error("please specify node as table.id")
-        l = node_s.split(".")
+            l = node_s.split(".")
+        elif type(node_s) in [list,tuple]:
+            l = node_s
+        else:
+            self.logger.error("unsupported format", str(type(node_s)))
+            return []
+
         label = ""
         if len(l) == 2:
             pass
         elif len(l) == 3:
             label = l[2]
         else:
-            self.logger.error("node need to be separated by two or three points")
+            self.logger.error("node need to be separated by one or two points")
 
         return tuple(l[:2]), label
 

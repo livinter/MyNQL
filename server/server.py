@@ -1,34 +1,29 @@
 from os import environ
+import time
+
 from xmlrpc.server import SimpleXMLRPCServer
 
 from peewee import SqliteDatabase, Model, CharField, TextField, CompositeKey
 
 from MyNQL import MyNQL
 
-if "MYNQL_DB_TYPE" in environ:
-    db_type = environ.get("MYNQL_DB_TYPE")
-else:
-    db_type = 'sqlite'
 
-if "MYNQL_DB_NAME" in environ:
-    name = environ.get("MYNQL_DB_NAME")
-else:
-    name = 'hangango'
+def get_environment(env_name, default):
+    if env_name in environ:
+        return environ.get(env_name)
+    else:
+        return default
 
-databse_name = name + '.db'
 
-if "MYNQL_HOST" in environ:
-    server = environ.get("MYNQL_HOST")
-else:
-    server = "localhost"
-
-if "MYNQL_PORT" in environ:
-    port = int(environ.get("MYNQL_PORT"))
-else:
-    port = 8000
+db_type = get_environment("MYNQL_DB_TYPE", 'sqlite')
+name = get_environment("MYNQL_DB_NAME", 'hangango')
+database_name = name + '.db'
+server = get_environment("MYNQL_HOST", "localhost")
+port = int(get_environment("MYNQL_PORT", 8000))
+mynql_log_file = get_environment("MYNQL_LOGFILE", None)
 
 if db_type == "sqlite":
-    db = SqliteDatabase(databse_name, pragmas={
+    db = SqliteDatabase(database_name, pragmas={
         'journal_mode': 'wal',
         'cache_size': -1024 * 64})
 
@@ -48,11 +43,9 @@ def peewee_create_tables():
         db.create_tables([Node])
 
 
-import time
 
 
 def peewee_serializer(action, key, text):
-    print("]]]", time.time(), action, key, "TXT:", text)
     cat, nam = key
     if action == "INSERT":
         Node.create(name=nam, category=cat, relation=text)
@@ -76,7 +69,7 @@ except:
     print("already created?")
     pass
 
-mynql = MyNQL(name, serializer=peewee_serializer)
+mynql = MyNQL(name, serializer=peewee_serializer, log_file=mynql_log_file)
 
 try:
     peewee_load_network(mynql)
